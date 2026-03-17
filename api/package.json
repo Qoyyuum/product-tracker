@@ -1,0 +1,25 @@
+{
+  "name": "product-tracker-api",
+  "version": "1.0.0",
+  "description": "Cloudflare Workers API for Product Tracker DApp",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest"
+  },
+  "keywords": ["cloudflare", "workers", "blockchain", "product-tracking"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "itty-router": "^4.0.0",
+    "qrcode": "^1.5.3",
+    "jose": "^5.2.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240129.0",
+    "wrangler": "^3.25.0",
+    "vitest": "^1.2.0"
+  }
+}

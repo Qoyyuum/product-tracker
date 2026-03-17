@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: product-tracker-api
+    ports:
+      - "8787:8787"
+    environment:
+      - NODE_ENV=development
+      - JWT_SECRET=dev-secret-change-in-production
+      - ADMIN_API_KEY=dev-admin-key
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+    command: npm run dev
+    networks:
+      - product-tracker-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: product-tracker-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8787
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+    depends_on:
+      - api
+    networks:
+      - product-tracker-network
+
+networks:
+  product-tracker-network:
+    driver: bridge
