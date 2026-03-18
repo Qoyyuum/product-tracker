@@ -24,8 +24,9 @@ export async function handleProductRoutes(request: Request, env: Env, action: st
         throw new APIError('Invalid action', 404);
     }
   } catch (error: any) {
+    console.error('Product route error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
-      status: error.status || 400,
+      status: error.status || 500,
       headers: { 'Content-Type': 'application/json', ...corsHeaders }
     });
   }
@@ -59,42 +60,48 @@ async function registerProduct(request: Request, env: Env): Promise<Response> {
   };
   
   const genesisBlock = await createBlock(genesisData, '0', privateKey);
-  
-  await env.DB.prepare(`
-    INSERT INTO products (id, batch_id, product_name, manufacturer_id, category, qr_hash, created_at, description)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `).bind(
-    productId,
-    batchId,
-    productName,
-    auth.orgId,
-    category,
-    qrHash,
-    Date.now(),
-    description || null
-  ).run();
-  
   const stageId = generateUUID();
-  await env.DB.prepare(`
-    INSERT INTO process_stages (id, product_id, stage_name, location, timestamp, recorded_by, previous_hash, current_hash, signature, metadata)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).bind(
-    stageId,
-    productId,
-    'Product Registered',
-    data.location || 'Factory',
-    genesisBlock.timestamp,
-    auth.orgId,
-    genesisBlock.previousHash,
-    genesisBlock.hash,
-    genesisBlock.signature,
-    JSON.stringify(genesisData)
-  ).run();
+  const timestamp = Date.now();
   
-  await env.DB.prepare(`
-    INSERT INTO qr_mappings (qr_hash, product_id, created_at)
-    VALUES (?, ?, ?)
-  `).bind(qrHash, productId, Date.now()).run();
+  try {
+    await env.DB.batch([
+      env.DB.prepare(`
+        INSERT INTO products (id, batch_id, product_name, manufacturer_id, category, qr_hash, created_at, description)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        productId,
+        batchId,
+        productName,
+        auth.orgId,
+        category,
+        qrHash,
+        timestamp,
+        description || null
+      ),
+      env.DB.prepare(`
+        INSERT INTO process_stages (id, product_id, stage_name, location, timestamp, recorded_by, previous_hash, current_hash, signature, metadata)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        stageId,
+        productId,
+        'Product Registered',
+        data.location || 'Factory',
+        genesisBlock.timestamp,
+        auth.orgId,
+        genesisBlock.previousHash,
+        genesisBlock.hash,
+        genesisBlock.signature,
+        JSON.stringify(genesisData)
+      ),
+      env.DB.prepare(`
+        INSERT INTO qr_mappings (qr_hash, product_id, created_at)
+        VALUES (?, ?, ?)
+      `).bind(qrHash, productId, timestamp)
+    ]);
+  } catch (error) {
+    console.error('Transaction failed during product registration:', error);
+    throw new APIError('Failed to register product', 500);
+  }
   
   await env.DB.prepare(`
     INSERT INTO analytics_events (id, event_type, product_id, timestamp)
@@ -128,6 +135,17 @@ async function addProcessStage(request: Request, env: Env): Promise<Response> {
   
   if (!product) {
     throw new APIError('Product not found', 404);
+  }
+  
+  // Authorization check: verify user's org owns the product or is a participant
+  if (product.manufacturer_id !== auth.orgId) {
+    const participant = await env.DB.prepare(
+      'SELECT id FROM product_participants WHERE product_id = ? AND organization_id = ?'
+    ).bind(productId, auth.orgId).first();
+    
+    if (!participant) {
+      throw new APIError('Forbidden: Not authorized to modify this product', 403);
+    }
   }
   
   const latestStage = await env.DB.prepare(`

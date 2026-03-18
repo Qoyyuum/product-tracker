@@ -6,7 +6,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:integration": "node integration.test.js"
+    "test:integration": "vitest run integration.test.js"
   },
   "keywords": [
     "integration-tests",

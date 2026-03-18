@@ -42,7 +42,7 @@ async function generateQRCode(request: Request, env: Env): Promise<Response> {
   const base64Data = qrDataUrl.split(',')[1];
   const buffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
   
-  await env.R2_BUCKET.put(`qr/${qrHash}.png`, buffer, {
+  await env.product_tracker_storage.put(`qr/${qrHash}.png`, buffer, {
     httpMetadata: {
       contentType: 'image/png'
     }
@@ -61,7 +61,7 @@ async function getQRCode(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const qrHash = url.pathname.split('/')[3];
   
-  const object = await env.R2_BUCKET.get(`qr/${qrHash}.png`);
+  const object = await env.product_tracker_storage.get(`qr/${qrHash}.png`);
   
   if (!object) {
     const qrDataUrl = await QRCode.toDataURL(qrHash, {

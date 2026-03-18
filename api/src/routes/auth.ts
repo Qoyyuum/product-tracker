@@ -18,7 +18,7 @@ export async function handleAuthRoutes(request: Request, env: Env, action: strin
     }
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
-      status: error.status || 400,
+      status: error.status || 500,
       headers: { 'Content-Type': 'application/json', ...corsHeaders }
     });
   }
@@ -42,7 +42,11 @@ async function register(request: Request, env: Env): Promise<Response> {
   const data = await request.json() as Record<string, any>;
   validateRequired(data, ['email', 'password', 'organizationName', 'organizationType', 'turnstileToken']);
   
-  const { email, password, organizationName, organizationType, turnstileToken, role = 'admin' } = data;
+  const { email, password, organizationName, organizationType, turnstileToken } = data;
+  
+  // Determine role server-side based on organization type
+  const role = organizationType === 'manufacturer' ? 'admin' : 
+               organizationType === 'auditor' ? 'auditor' : 'user';
   
   const turnstileValid = await verifyTurnstile(turnstileToken, env);
   if (!turnstileValid) {

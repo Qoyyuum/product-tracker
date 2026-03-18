@@ -41,10 +41,41 @@ Write-Host ""
 Write-Host "3. Starting services for integration tests..." -ForegroundColor Yellow
 Write-Host "==========================================" -ForegroundColor Cyan
 docker-compose -f docker-compose.test.yml up -d api frontend
+$UpStatus = $LASTEXITCODE
 
-# Wait for services to be ready
+if ($UpStatus -ne 0) {
+    Write-Host "Failed to start services" -ForegroundColor Red
+    docker-compose -f docker-compose.test.yml down -v
+    exit 1
+}
+
+# Wait for services to be ready with polling
 Write-Host "Waiting for services to be ready..." -ForegroundColor Yellow
-Start-Sleep -Seconds 10
+$timeout = 60
+$elapsed = 0
+$interval = 2
+
+while ($elapsed -lt $timeout) {
+    $apiHealth = docker-compose -f docker-compose.test.yml ps api 2>$null | Select-String "healthy"
+    $frontendHealth = docker-compose -f docker-compose.test.yml ps frontend 2>$null | Select-String "healthy"
+    
+    if ($apiHealth -and $frontendHealth) {
+        Write-Host "Services are healthy!" -ForegroundColor Green
+        break
+    }
+    
+    Start-Sleep -Seconds $interval
+    $elapsed += $interval
+    Write-Host "Waiting... ($elapsed/$timeout seconds)" -ForegroundColor Yellow
+}
+
+if ($elapsed -ge $timeout) {
+    Write-Host "Timeout waiting for services to be healthy" -ForegroundColor Red
+    docker-compose -f docker-compose.test.yml logs api
+    docker-compose -f docker-compose.test.yml logs frontend
+    docker-compose -f docker-compose.test.yml down -v
+    exit 1
+}
 
 # Run integration tests
 Write-Host ""

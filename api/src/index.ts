@@ -3,13 +3,13 @@ import { handleProductRoutes } from './routes/products.js';
 import { handleAuditRoutes } from './routes/audits.js';
 import { handleAuthRoutes } from './routes/auth.js';
 import { handleQRRoutes } from './routes/qr.js';
-import { corsHeaders, handleCORS } from './middleware/cors.js';
+import { corsHeaders, handleCORS, addCORSHeaders } from './middleware/cors.js';
 import { handleError } from './utils/errors.js';
 import { Env } from './types.js';
 
 const router = Router();
 
-router.options('*', handleCORS);
+router.options('*', (req: Request, env: Env) => handleCORS(req, env));
 
 router.get('/v1/health', async (_request: Request, env: Env) => {
   try {
@@ -66,7 +66,8 @@ router.all('*', () => new Response('Not Found', {
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
-      return await router.handle(request, env, ctx);
+      const response = await router.handle(request, env, ctx);
+      return addCORSHeaders(response, request, env);
     } catch (error) {
       return handleError(error);
     }

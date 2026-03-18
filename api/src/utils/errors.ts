@@ -14,7 +14,7 @@ export function handleError(error: any): Response {
   console.error('API Error:', error);
   
   const status = error.status || 500;
-  const message = error.message || 'Internal server error';
+  const message = error instanceof APIError ? error.message : 'Internal server error';
   
   return new Response(JSON.stringify({
     error: message,
@@ -32,7 +32,7 @@ export function validateRequired(data: Record<string, any>, fields: string[]): v
   const missing: string[] = [];
   
   for (const field of fields) {
-    if (!data[field]) {
+    if (data[field] === undefined || data[field] === null) {
       missing.push(field);
     }
   }

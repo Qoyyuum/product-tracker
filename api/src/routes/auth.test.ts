@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { handleAuthRoutes } from './auth.js';
 import { Env } from '../types.js';
+import * as crypto from '../blockchain/crypto.js';
 
 describe('Auth Routes', () => {
   let mockEnv: Env;
@@ -143,6 +144,9 @@ describe('Auth Routes', () => {
         body: JSON.stringify(loginData),
       });
 
+      // Mock verifyPassword to return true
+      vi.spyOn(crypto, 'verifyPassword').mockResolvedValue(true);
+
       const mockFirst = vi.fn().mockResolvedValue({
         id: 'user-id',
         email: 'test@example.com',
@@ -160,11 +164,10 @@ describe('Auth Routes', () => {
 
       const response = await handleAuthRoutes(mockRequest, mockEnv, 'login');
       
-      if (response.status === 200) {
-        const data = await response.json();
-        expect(data).toHaveProperty('token');
-        expect(data).toHaveProperty('user');
-      }
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data).toHaveProperty('token');
+      expect(data).toHaveProperty('user');
     });
 
     it('should reject invalid credentials', async () => {

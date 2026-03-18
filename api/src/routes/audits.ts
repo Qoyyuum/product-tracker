@@ -1,5 +1,5 @@
 import { validateAuth } from '../middleware/auth.js';
-import { generateUUID, signData } from '../blockchain/crypto.js';
+import { generateUUID, verifySignature } from '../blockchain/crypto.js';
 import { corsHeaders } from '../middleware/cors.js';
 import { APIError, validateRequired } from '../utils/errors.js';
 import { Env } from '../types.js';
@@ -61,9 +61,9 @@ async function createAudit(request: Request, env: Env): Promise<Response> {
   }
   
   const data = await request.json() as Record<string, any>;
-  validateRequired(data, ['productId', 'status', 'privateKey']);
+  validateRequired(data, ['productId', 'status', 'signature']);
   
-  const { productId, stageId, status, notes, privateKey } = data;
+  const { productId, stageId, status, notes, signature, signedData } = data;
   
   const product = await env.DB.prepare(
     'SELECT id FROM products WHERE id = ?'
@@ -86,7 +86,21 @@ async function createAudit(request: Request, env: Env): Promise<Response> {
     timestamp
   };
   
-  const signature = await signData(auditData, privateKey);
+  const dataToVerify = signedData || JSON.stringify(auditData);
+  
+  const org = await env.DB.prepare(
+    'SELECT public_key FROM organizations WHERE id = ?'
+  ).bind(auth.orgId).first();
+  
+  if (!org || !org.public_key) {
+    throw new APIError('Organization public key not found', 400);
+  }
+  
+  const isValid = await verifySignature(dataToVerify, signature, org.public_key as string);
+  
+  if (!isValid) {
+    throw new APIError('Invalid signature', 403);
+  }
   
   await env.DB.prepare(`
     INSERT INTO audit_records (id, product_id, stage_id, auditor_id, status, notes, signature, timestamp)
@@ -140,16 +154,36 @@ async function updateAudit(request: Request, env: Env): Promise<Response> {
     throw new APIError('Cannot update another auditor\'s record', 403);
   }
   
-  const { status, notes, privateKey } = data;
+  const { status, notes, signature, signedData } = data;
   
-  const updateData = {
-    auditId,
-    status: status || audit.status,
-    notes: notes || audit.notes,
-    timestamp: Date.now()
-  };
+  let finalSignature = audit.signature as string;
   
-  const signature = privateKey ? await signData(updateData, privateKey) : audit.signature;
+  if (signature) {
+    const updateData = {
+      auditId,
+      status: status || audit.status,
+      notes: notes || audit.notes,
+      timestamp: Date.now()
+    };
+    
+    const dataToVerify = signedData || JSON.stringify(updateData);
+    
+    const org = await env.DB.prepare(
+      'SELECT public_key FROM organizations WHERE id = ?'
+    ).bind(auth.orgId).first();
+    
+    if (!org || !org.public_key) {
+      throw new APIError('Organization public key not found', 400);
+    }
+    
+    const isValid = await verifySignature(dataToVerify, signature, org.public_key as string);
+    
+    if (!isValid) {
+      throw new APIError('Invalid signature', 403);
+    }
+    
+    finalSignature = signature;
+  }
   
   await env.DB.prepare(`
     UPDATE audit_records 
@@ -158,7 +192,7 @@ async function updateAudit(request: Request, env: Env): Promise<Response> {
   `).bind(
     status || audit.status,
     notes || audit.notes,
-    signature,
+    finalSignature,
     Date.now(),
     auditId
   ).run();

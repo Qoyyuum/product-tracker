@@ -44,10 +44,41 @@ echo ""
 echo "3. Starting services for integration tests..."
 echo "=========================================="
 docker-compose -f docker-compose.test.yml up -d api frontend
+UP_STATUS=$?
 
-# Wait for services to be ready
+if [ $UP_STATUS -ne 0 ]; then
+    echo -e "${RED}Failed to start services${NC}"
+    docker-compose -f docker-compose.test.yml down -v
+    exit 1
+fi
+
+# Wait for services to be ready with polling
 echo "Waiting for services to be ready..."
-sleep 10
+TIMEOUT=60
+ELAPSED=0
+INTERVAL=2
+
+while [ $ELAPSED -lt $TIMEOUT ]; do
+    API_HEALTH=$(docker-compose -f docker-compose.test.yml ps api 2>/dev/null | grep -c "healthy")
+    FRONTEND_HEALTH=$(docker-compose -f docker-compose.test.yml ps frontend 2>/dev/null | grep -c "healthy")
+    
+    if [ $API_HEALTH -gt 0 ] && [ $FRONTEND_HEALTH -gt 0 ]; then
+        echo -e "${GREEN}Services are healthy!${NC}"
+        break
+    fi
+    
+    sleep $INTERVAL
+    ELAPSED=$((ELAPSED + INTERVAL))
+    echo "Waiting... ($ELAPSED/$TIMEOUT seconds)"
+done
+
+if [ $ELAPSED -ge $TIMEOUT ]; then
+    echo -e "${RED}Timeout waiting for services to be healthy${NC}"
+    docker-compose -f docker-compose.test.yml logs api
+    docker-compose -f docker-compose.test.yml logs frontend
+    docker-compose -f docker-compose.test.yml down -v
+    exit 1
+fi
 
 # Run integration tests
 echo ""

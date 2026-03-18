@@ -1,8 +1,9 @@
 export interface Env {
   DB: D1Database;
-  R2_BUCKET: R2Bucket;
+  product_tracker_storage: R2Bucket;
   JWT_SECRET: string;
   TURNSTILE_SECRET_KEY: string;
+  CORS_ORIGINS?: string;
 }
 
 export interface User {

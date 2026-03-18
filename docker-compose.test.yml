@@ -43,8 +43,10 @@ services:
       - ./tests:/tests
       - /tests/node_modules
     depends_on:
-      - api
-      - frontend
+      api:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
     networks:
       - test-network
     command: npm test
