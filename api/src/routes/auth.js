@@ -27,11 +27,31 @@ export async function handleAuthRoutes(request, env, action) {
   }
 }
 
+async function verifyTurnstile(token, env) {
+  const formData = new FormData();
+  formData.append('secret', env.TURNSTILE_SECRET_KEY);
+  formData.append('response', token);
+  
+  const result = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    body: formData,
+  });
+  
+  const outcome = await result.json();
+  return outcome.success;
+}
+
 async function register(request, env) {
   const data = await request.json();
-  validateRequired(data, ['email', 'password', 'organizationName', 'organizationType']);
+  validateRequired(data, ['email', 'password', 'organizationName', 'organizationType', 'turnstileToken']);
   
-  const { email, password, organizationName, organizationType, role = 'admin' } = data;
+  const { email, password, organizationName, organizationType, turnstileToken, role = 'admin' } = data;
+  
+  // Verify Turnstile token
+  const turnstileValid = await verifyTurnstile(turnstileToken, env);
+  if (!turnstileValid) {
+    throw new APIError('CAPTCHA verification failed', 400);
+  }
   
   // Check if user already exists
   const existing = await env.DB.prepare(

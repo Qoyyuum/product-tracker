@@ -11,7 +11,14 @@ describe('Auth Routes', () => {
         prepare: vi.fn(),
       },
       JWT_SECRET: 'test-secret',
+      TURNSTILE_SECRET_KEY: 'test-turnstile-secret',
     };
+
+    global.fetch = vi.fn(() =>
+      Promise.resolve({
+        json: () => Promise.resolve({ success: true }),
+      })
+    );
   });
 
   describe('register', () => {
@@ -21,6 +28,7 @@ describe('Auth Routes', () => {
         password: 'password123',
         organizationName: 'Test Org',
         organizationType: 'manufacturer',
+        turnstileToken: 'test-turnstile-token',
       };
 
       mockRequest = new Request('http://localhost/v1/auth/register', {
@@ -53,6 +61,7 @@ describe('Auth Routes', () => {
         password: 'password123',
         organizationName: 'Test Org',
         organizationType: 'manufacturer',
+        turnstileToken: 'test-turnstile-token',
       };
 
       mockRequest = new Request('http://localhost/v1/auth/register', {
@@ -88,6 +97,34 @@ describe('Auth Routes', () => {
 
       const response = await handleAuthRoutes(mockRequest, mockEnv, 'register');
       expect(response.status).toBe(400);
+    });
+
+    it('should reject invalid Turnstile token', async () => {
+      const userData = {
+        email: 'test@example.com',
+        password: 'password123',
+        organizationName: 'Test Org',
+        organizationType: 'manufacturer',
+        turnstileToken: 'invalid-token',
+      };
+
+      global.fetch = vi.fn(() =>
+        Promise.resolve({
+          json: () => Promise.resolve({ success: false }),
+        })
+      );
+
+      mockRequest = new Request('http://localhost/v1/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      });
+
+      const response = await handleAuthRoutes(mockRequest, mockEnv, 'register');
+      expect(response.status).toBe(400);
+      
+      const data = await response.json();
+      expect(data.error).toBe('CAPTCHA verification failed');
     });
   });
 
