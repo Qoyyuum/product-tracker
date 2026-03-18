@@ -1,4 +1,4 @@
-FROM node:24-alpine
+FROM node:22-slim
 
 WORKDIR /app
 
@@ -11,8 +11,11 @@ RUN npm install
 # Copy source code
 COPY . .
 
+# !! IMPORTANT: Set this environment variable to prevent wrangler dev from hanging !!
+ENV WRANGLER_SEND_METRICS=false
+
 # Expose port
 EXPOSE 8787
 
 # Start development server
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start"]
