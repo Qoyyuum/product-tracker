@@ -104,10 +104,10 @@ export default function ManufacturerDashboard() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Manufacturer Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manufacturer Dashboard</h1>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700"
+          className="flex items-center gap-2 bg-primary-600 dark:bg-primary-500 text-white px-4 py-2 rounded-md hover:bg-primary-700 dark:hover:bg-primary-600"
         >
           <Plus size={20} />
           Register New Product
@@ -115,56 +115,56 @@ export default function ManufacturerDashboard() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-          <p className="text-red-800">{error}</p>
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4">
+          <p className="text-red-800 dark:text-red-400">{error}</p>
         </div>
       )}
 
       {success && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-          <p className="text-green-800">{success}</p>
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-4">
+          <p className="text-green-800 dark:text-green-400">{success}</p>
         </div>
       )}
 
       {showForm && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Register New Product</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Register New Product</h2>
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Product Name *
               </label>
               <input
                 type="text"
                 value={formData.productName}
                 onChange={(e) => setFormData({...formData, productName: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Batch ID *
               </label>
               <input
                 type="text"
                 value={formData.batchId}
                 onChange={(e) => setFormData({...formData, batchId: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Category *
               </label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 required
               >
                 <option value="">Select category</option>
@@ -178,44 +178,44 @@ export default function ManufacturerDashboard() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Description
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 rows={3}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Location *
               </label>
               <input
                 type="text"
                 value={formData.location}
                 onChange={(e) => setFormData({...formData, location: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                 placeholder="e.g., Factory A, City, Country"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Private Key * (from registration)
               </label>
               <input
                 type="password"
                 value={formData.privateKey}
                 onChange={(e) => setFormData({...formData, privateKey: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                 placeholder="Enter your organization's private key"
                 required
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 This is the private key you received during registration
               </p>
             </div>
@@ -224,14 +224,14 @@ export default function ManufacturerDashboard() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 disabled:opacity-50"
+                className="flex-1 bg-primary-600 dark:bg-primary-500 text-white px-4 py-2 rounded-md hover:bg-primary-700 dark:hover:bg-primary-600 disabled:opacity-50"
               >
                 {loading ? 'Registering...' : 'Register Product'}
               </button>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
               >
                 Cancel
               </button>
@@ -240,32 +240,32 @@ export default function ManufacturerDashboard() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center gap-3 mb-4">
-          <Package className="h-6 w-6 text-primary-600" />
-          <h2 className="text-xl font-bold text-gray-900">Your Products</h2>
+          <Package className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Your Products</h2>
         </div>
 
         {loadingProducts ? (
-          <p className="text-gray-600">Loading products...</p>
+          <p className="text-gray-600 dark:text-gray-400">Loading products...</p>
         ) : products.length === 0 ? (
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             No products registered yet. Click "Register New Product" to get started.
           </p>
         ) : (
           <div className="space-y-4">
             {products.map((product) => (
-              <div key={product.id} className="border border-gray-200 rounded-lg p-4 hover:border-primary-300 transition-colors">
+              <div key={product.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-primary-300 dark:hover:border-primary-600 transition-colors">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 text-lg">{product.product_name}</h3>
-                    <div className="mt-2 space-y-1 text-sm text-gray-600">
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-lg">{product.product_name}</h3>
+                    <div className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-300">
                       <p><span className="font-medium">Batch ID:</span> {product.batch_id}</p>
                       <p><span className="font-medium">Category:</span> {product.category}</p>
                       {product.description && (
                         <p><span className="font-medium">Description:</span> {product.description}</p>
                       )}
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         Registered: {new Date(product.created_at).toLocaleDateString()}
                       </p>
                     </div>
@@ -275,15 +275,14 @@ export default function ManufacturerDashboard() {
                       href={`/product/${product.qr_hash}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-3 py-2 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-700"
+                      className="flex items-center gap-2 px-3 py-2 text-sm bg-primary-600 dark:bg-primary-500 text-white rounded-md hover:bg-primary-700 dark:hover:bg-primary-600"
                     >
                       <ExternalLink size={16} />
                       View Details
                     </a>
                     <button
-                      onClick={() => setQrModalProduct(product)}
-                      className="p-2 bg-white border-2 border-gray-200 rounded-md hover:border-primary-400 transition-colors"
-                      title="Click to view QR code"
+                      onClick={() => window.open(`/product/${product.qr_hash}`, '_blank')}
+                      className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600"
                     >
                       <img
                         src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${window.location.origin}/product/${product.qr_hash}`}
