@@ -4,7 +4,7 @@ Complete guide to deploying the QR-based product tracker on Cloudflare's infrast
 
 ## Prerequisites
 
-- Node.js 18+ installed
+- Node.js 24+ installed
 - Cloudflare account (free tier)
 - Git installed
 - Basic command line knowledge

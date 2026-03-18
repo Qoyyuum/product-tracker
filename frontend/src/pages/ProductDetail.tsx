@@ -1,11 +1,14 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { CheckCircle, XCircle, Clock, MapPin, Shield } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, MapPin, Shield, Download } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import QRCode from 'qrcode';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787';
 
 export default function ProductDetail() {
   const { qrHash } = useParams();
+  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['product', qrHash],
@@ -15,6 +18,22 @@ export default function ProductDetail() {
       return response.json();
     },
   });
+
+  useEffect(() => {
+    if (qrCanvasRef.current && qrHash && data) {
+      const productUrl = `${window.location.origin}/product/${qrHash}`;
+      QRCode.toCanvas(qrCanvasRef.current, productUrl, {
+        width: 256,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      }).catch(err => {
+        console.error('QR code generation failed:', err);
+      });
+    }
+  }, [qrHash, data]);
 
   if (isLoading) {
     return (
@@ -39,8 +58,45 @@ export default function ProductDetail() {
 
   const { product, stages, certifications, audits } = data;
 
+  const downloadQR = () => {
+    if (qrCanvasRef.current) {
+      const url = qrCanvasRef.current.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = `product-${product.batchId}-qr.png`;
+      link.href = url;
+      link.click();
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {/* QR Code Section */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Product QR Code</h2>
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          <div className="bg-gray-50 p-4 rounded-lg border-2 border-gray-200">
+            <canvas ref={qrCanvasRef} />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-gray-900 mb-2">How to use this QR code:</h3>
+            <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700 mb-4">
+              <li>Click "Download QR Code" below</li>
+              <li>Print the QR code image</li>
+              <li>Attach it to your product packaging</li>
+              <li>Customers can scan it to verify authenticity</li>
+            </ol>
+            <button
+              onClick={downloadQR}
+              className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700"
+            >
+              <Download size={18} />
+              Download QR Code
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Product Details Section */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-start justify-between mb-4">
           <div>
