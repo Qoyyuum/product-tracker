@@ -26,9 +26,9 @@ router.get('/v1/health', async (_request: Request, env: Env) => {
       }
     });
   } catch (error: any) {
+    console.error('Health check failed:', error);
     return new Response(JSON.stringify({
-      status: 'unhealthy',
-      error: error.message
+      status: 'unhealthy'
     }), {
       status: 503,
       headers: {
@@ -69,7 +69,8 @@ export default {
       const response = await router.handle(request, env, ctx);
       return addCORSHeaders(response, request, env);
     } catch (error) {
-      return handleError(error);
+      const errorResponse = handleError(error);
+      return addCORSHeaders(errorResponse, request, env);
     }
   }
 };

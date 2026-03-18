@@ -4,7 +4,7 @@ Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host "Running Docker Compose Tests" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
-function Print-Status {
+function Write-TestStatus {
     param (
         [int]$ExitCode,
         [string]$TestName
@@ -27,14 +27,14 @@ Write-Host "1. Running API Tests in Docker..." -ForegroundColor Yellow
 Write-Host "==========================================" -ForegroundColor Cyan
 docker-compose -f docker-compose.test.yml run --rm api-test
 $ApiStatus = $LASTEXITCODE
-Print-Status -ExitCode $ApiStatus -TestName "API Tests (Docker)"
+Write-TestStatus -ExitCode $ApiStatus -TestName "API Tests (Docker)"
 
 Write-Host ""
 Write-Host "2. Running Frontend Tests in Docker..." -ForegroundColor Yellow
 Write-Host "==========================================" -ForegroundColor Cyan
 docker-compose -f docker-compose.test.yml run --rm frontend-test
 $FrontendStatus = $LASTEXITCODE
-Print-Status -ExitCode $FrontendStatus -TestName "Frontend Tests (Docker)"
+Write-TestStatus -ExitCode $FrontendStatus -TestName "Frontend Tests (Docker)"
 
 # Start services for integration tests
 Write-Host ""
@@ -56,10 +56,10 @@ $elapsed = 0
 $interval = 2
 
 while ($elapsed -lt $timeout) {
-    $apiHealth = docker-compose -f docker-compose.test.yml ps api 2>$null | Select-String "healthy"
-    $frontendHealth = docker-compose -f docker-compose.test.yml ps frontend 2>$null | Select-String "healthy"
+    $apiHealth = docker inspect --format='{{.State.Health.Status}}' product-tracker-api-integration 2>$null
+    $frontendHealth = docker inspect --format='{{.State.Health.Status}}' product-tracker-frontend-integration 2>$null
     
-    if ($apiHealth -and $frontendHealth) {
+    if ($apiHealth -eq "healthy" -and $frontendHealth -eq "healthy") {
         Write-Host "Services are healthy!" -ForegroundColor Green
         break
     }
@@ -83,7 +83,7 @@ Write-Host "4. Running Integration Tests..." -ForegroundColor Yellow
 Write-Host "==========================================" -ForegroundColor Cyan
 docker-compose -f docker-compose.test.yml run --rm integration-test
 $IntegrationStatus = $LASTEXITCODE
-Print-Status -ExitCode $IntegrationStatus -TestName "Integration Tests (Docker)"
+Write-TestStatus -ExitCode $IntegrationStatus -TestName "Integration Tests (Docker)"
 
 # Clean up
 Write-Host ""
@@ -92,12 +92,12 @@ docker-compose -f docker-compose.test.yml down -v
 
 # Summary
 Write-Host ""
-Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "=========================================" -ForegroundColor Cyan
 Write-Host "Docker Test Suite Summary" -ForegroundColor Cyan
-Write-Host "==========================================" -ForegroundColor Cyan
-Print-Status -ExitCode $ApiStatus -TestName "API Tests (Docker)"
-Print-Status -ExitCode $FrontendStatus -TestName "Frontend Tests (Docker)"
-Print-Status -ExitCode $IntegrationStatus -TestName "Integration Tests (Docker)"
+Write-Host "=========================================" -ForegroundColor Cyan
+Write-TestStatus -ExitCode $ApiStatus -TestName "API Tests (Docker)"
+Write-TestStatus -ExitCode $FrontendStatus -TestName "Frontend Tests (Docker)"
+Write-TestStatus -ExitCode $IntegrationStatus -TestName "Integration Tests (Docker)"
 
 Write-Host ""
 if ($ApiStatus -eq 0 -and $FrontendStatus -eq 0 -and $IntegrationStatus -eq 0) {

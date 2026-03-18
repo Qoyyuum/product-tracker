@@ -17,8 +17,11 @@ export async function handleAuthRoutes(request: Request, env: Env, action: strin
         throw new APIError('Invalid action', 404);
     }
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: error.status || 500,
+    console.error('Auth route error:', error);
+    const message = error instanceof APIError ? error.message : 'Internal server error';
+    const status = error instanceof APIError ? error.status : 500;
+    return new Response(JSON.stringify({ error: message }), {
+      status,
       headers: { 'Content-Type': 'application/json', ...corsHeaders }
     });
   }
@@ -46,7 +49,8 @@ async function register(request: Request, env: Env): Promise<Response> {
   
   // Determine role server-side based on organization type
   const role = organizationType === 'manufacturer' ? 'admin' : 
-               organizationType === 'auditor' ? 'auditor' : 'user';
+               organizationType === 'auditor' ? 'auditor' : 
+               organizationType === 'operator' ? 'operator' : 'consumer';
   
   const turnstileValid = await verifyTurnstile(turnstileToken, env);
   if (!turnstileValid) {
@@ -64,18 +68,21 @@ async function register(request: Request, env: Env): Promise<Response> {
   const { publicKey, privateKey } = await generateKeyPair();
   
   const orgId = generateUUID();
-  await env.DB.prepare(`
-    INSERT INTO organizations (id, name, type, public_key, created_at, verified)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).bind(orgId, organizationName, organizationType, publicKey, Date.now(), 0).run();
-  
   const userId = generateUUID();
   const passwordHash = await hashPassword(password);
+  const timestamp = Date.now();
   
-  await env.DB.prepare(`
-    INSERT INTO users (id, email, organization_id, role, password_hash, created_at)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).bind(userId, email, orgId, role, passwordHash, Date.now()).run();
+  // Execute both inserts atomically
+  await env.DB.batch([
+    env.DB.prepare(`
+      INSERT INTO organizations (id, name, type, public_key, created_at, verified)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).bind(orgId, organizationName, organizationType, publicKey, timestamp, 0),
+    env.DB.prepare(`
+      INSERT INTO users (id, email, organization_id, role, password_hash, created_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).bind(userId, email, orgId, role, passwordHash, timestamp)
+  ]);
   
   const token = await generateToken({
     id: userId,

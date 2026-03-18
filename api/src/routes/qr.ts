@@ -61,6 +61,10 @@ async function getQRCode(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const qrHash = url.pathname.split('/')[3];
   
+  if (!qrHash || qrHash.trim() === '') {
+    throw new APIError('Invalid or missing QR hash', 400);
+  }
+  
   const object = await env.product_tracker_storage.get(`qr/${qrHash}.png`);
   
   if (!object) {

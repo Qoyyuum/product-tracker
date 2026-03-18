@@ -255,6 +255,19 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 ---
 
+### 20. **Health Check Error Exposure** ✅
+**Issue:** Health check endpoint exposed raw `error.message` in response, leaking internal error details  
+**Fix:** Removed error message from response and added server-side logging  
+**File:** `api/src/index.ts:29-31`
+
+**Changes:**
+- Added `console.error('Health check failed:', error)` for server-side logging
+- Removed `error: error.message` from response JSON
+- Response now only returns `{ status: 'unhealthy' }` with 503 status
+- Internal error details logged server-side but not exposed to clients
+
+---
+
 ## 🔒 Security Improvements
 
 1. **CORS Protection** - Origin allowlist prevents unauthorized cross-origin requests
@@ -271,7 +284,7 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 All tests passing after fixes:
 
-```
+```text
 ✓ TypeScript compilation: 0 errors
 ✓ API unit tests: 30 passed | 2 skipped (32 total)
 ✓ Frontend tests: 10 passed (10 total)
@@ -305,13 +318,13 @@ main = "src/index.ts"
 
 Before deploying to production:
 
-1. ✅ Set `CORS_ORIGINS` environment variable with production domains
-2. ✅ Verify `JWT_SECRET` is set securely
-3. ✅ Ensure `TURNSTILE_SECRET_KEY` is configured
-4. ✅ Test signature-based audit creation from client
-5. ✅ Verify R2 bucket binding name matches `product_tracker_storage`
-6. ✅ Run full test suite: `npm test` in api directory
-7. ✅ Test Docker compose: `./test-docker.ps1` or `./test-docker.sh`
+1. ☐ Set `CORS_ORIGINS` environment variable with production domains
+2. ☐ Verify `JWT_SECRET` is set securely
+3. ☐ Ensure `TURNSTILE_SECRET_KEY` is configured
+4. ☐ Test signature-based audit creation from client
+5. ☐ Verify R2 bucket binding name matches `product_tracker_storage`
+6. ☐ Run full test suite: `npm test` in api directory
+7. ☐ Test Docker compose: `./test-docker.ps1` or `./test-docker.sh`
 
 ---
 
@@ -323,4 +336,4 @@ Before deploying to production:
 
 ---
 
-**All security issues verified and fixed. Application ready for secure deployment.**
+**All security issues verified and fixed as of review date. Application is ready for secure deployment subject to ongoing monitoring and future security reviews.**

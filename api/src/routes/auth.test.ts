@@ -14,7 +14,7 @@ describe('Auth Routes', () => {
       } as any,
       JWT_SECRET: 'test-secret',
       TURNSTILE_SECRET_KEY: 'test-turnstile-secret',
-      R2_BUCKET: {} as any,
+      product_tracker_storage: {} as any,
     };
 
     global.fetch = vi.fn(() =>
