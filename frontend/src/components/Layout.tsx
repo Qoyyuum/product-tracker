@@ -1,13 +1,19 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { QrCode, Home, User, LogOut } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const token = localStorage.getItem('token');
-  const isAuthenticated = !!token;
+  const location = useLocation();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+  }, [location]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');

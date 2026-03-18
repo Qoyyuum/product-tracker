@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Copy, Check } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787';
 
@@ -13,7 +14,18 @@ export default function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [privateKey, setPrivateKey] = useState('');
+  const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(privateKey);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,11 +61,27 @@ export default function Register() {
           <h2 className="text-xl font-bold text-yellow-900 mb-4">⚠️ Save Your Private Key</h2>
           <p className="text-yellow-800 mb-4">
             This is your organization's private key. You need this to sign products and stages.
-            <strong> Save it securely - it will only be shown once!</strong>
+            <strong> Save it securely - it will only be shown once!</strong> {/* TODO: Add a help guideline doc link here to explain how to use this private key */}
           </p>
           <div className="bg-white p-4 rounded border border-yellow-300 mb-4">
-            <code className="text-sm break-all">{privateKey}</code>
+            <code className="text-sm text-black break-all">{privateKey}</code>
           </div>
+          <button
+            onClick={copyToClipboard}
+            className="w-full mb-3 bg-gray-100 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-200 border border-gray-300 flex items-center justify-center gap-2"
+          >
+            {copied ? (
+              <>
+                <Check size={18} />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Copy size={18} />
+                Copy to Clipboard
+              </>
+            )}
+          </button>
           <button
             onClick={() => navigate('/manufacturer')}
             className="w-full bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700"

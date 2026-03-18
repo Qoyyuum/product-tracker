@@ -1,7 +1,18 @@
-import { Link } from 'react-router-dom';
-import { QrCode, Shield, CheckCircle, Globe } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { QrCode, Shield, CheckCircle, Globe, Search } from 'lucide-react';
+import { useState } from 'react';
 
 export default function Home() {
+  const [searchHash, setSearchHash] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchHash.trim()) {
+      navigate(`/product/${searchHash.trim()}`);
+    }
+  };
+
   return (
     <div className="space-y-12">
       <div className="text-center">
@@ -12,6 +23,33 @@ export default function Home() {
           Scan QR codes to instantly verify product origins, quality control, and certifications.
           Built on Cloudflare's edge network with cryptographic guarantees.
         </p>
+
+        {/* Search/Verify Section */}
+        <div className="max-w-2xl mx-auto mb-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">Verify Product by Hash</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Enter the QR hash or product ID to verify authenticity
+            </p>
+            <form onSubmit={handleSearch} className="flex gap-2">
+              <input
+                type="text"
+                value={searchHash}
+                onChange={(e) => setSearchHash(e.target.value)}
+                placeholder="Enter QR hash or product ID..."
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+              <button
+                type="submit"
+                className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 flex items-center gap-2"
+              >
+                <Search size={20} />
+                Verify
+              </button>
+            </form>
+          </div>
+        </div>
+
         <div className="flex justify-center space-x-4">
           <Link
             to="/scan"
