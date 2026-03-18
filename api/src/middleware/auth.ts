@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { AuthPayload, Env } from '../types.js';
+import { APIError } from '../utils/errors.js';
 
 interface UserTokenData {
   id: string;
@@ -39,7 +40,7 @@ export async function validateToken(token: string, secret: string): Promise<Auth
       email: payload.email as string
     };
   } catch (error) {
-    throw new Error('Invalid or expired token');
+    throw new APIError('Invalid or expired token', 401);
   }
 }
 
@@ -47,7 +48,7 @@ export async function validateAuth(request: Request, env: Env): Promise<AuthPayl
   const authHeader = request.headers.get('Authorization');
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new Error('Missing or invalid authorization header');
+    throw new APIError('Missing or invalid authorization header', 401);
   }
   
   const token = authHeader.substring(7);
@@ -61,7 +62,7 @@ export function requireRole(allowedRoles: string[]) {
     const auth = await validateAuth(request, env);
     
     if (!allowedRoles.includes(auth.role)) {
-      throw new Error('Insufficient permissions');
+      throw new APIError('Insufficient permissions', 403);
     }
     
     return auth;

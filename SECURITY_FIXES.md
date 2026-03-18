@@ -239,6 +239,22 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 ---
 
+### 19. **Authentication Error Status Codes** ✅
+**Issue:** Auth middleware threw standard `Error` without `status` property, causing authentication failures to return 500 instead of 401/403  
+**Fix:** Replace `Error` with `APIError` including proper HTTP status codes  
+**File:** `api/src/middleware/auth.ts:3,43,51,65`
+
+**Changes:**
+- Imported `APIError` from `../utils/errors.js`
+- Line 43: `throw new APIError('Invalid or expired token', 401)` (was: `Error`)
+- Line 51: `throw new APIError('Missing or invalid authorization header', 401)` (was: `Error`)
+- Line 65: `throw new APIError('Insufficient permissions', 403)` (was: `Error`)
+- Authentication failures now correctly return:
+  - **401 Unauthorized** for missing/invalid tokens
+  - **403 Forbidden** for insufficient permissions
+
+---
+
 ## 🔒 Security Improvements
 
 1. **CORS Protection** - Origin allowlist prevents unauthorized cross-origin requests
