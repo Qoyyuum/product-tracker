@@ -34,8 +34,15 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
         );
 
         setIsScanning(true);
-      } catch (err) {
-        setError('Failed to start camera. Please ensure camera permissions are granted.');
+      } catch (err: any) {
+        const errorMsg = err?.message || '';
+        if (errorMsg.includes('NotAllowedError') || errorMsg.includes('Permission')) {
+          setError('Camera access denied. Please allow camera permissions in your browser settings and refresh the page.');
+        } else if (errorMsg.includes('NotFoundError')) {
+          setError('No camera found on this device.');
+        } else {
+          setError('Failed to start camera. Please ensure camera permissions are granted and try again.');
+        }
         console.error('Scanner error:', err);
       }
     };
@@ -74,7 +81,30 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
 
         {error ? (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-            <p className="text-red-800 text-sm">{error}</p>
+            <p className="text-red-800 text-sm font-semibold mb-3">{error}</p>
+            <div className="text-xs text-red-700 space-y-2">
+              <p className="font-semibold">How to enable camera access:</p>
+              <div className="bg-white rounded p-2 space-y-1">
+                <p><strong>Firefox Mobile:</strong></p>
+                <p>1. Tap the lock icon in the address bar</p>
+                <p>2. Tap "Permissions"</p>
+                <p>3. Enable "Camera"</p>
+                <p>4. Refresh this page</p>
+              </div>
+              <div className="bg-white rounded p-2 space-y-1">
+                <p><strong>Chrome Mobile:</strong></p>
+                <p>1. Tap the lock/info icon in the address bar</p>
+                <p>2. Tap "Permissions"</p>
+                <p>3. Allow "Camera"</p>
+                <p>4. Refresh this page</p>
+              </div>
+              <div className="bg-white rounded p-2 space-y-1">
+                <p><strong>Safari iOS:</strong></p>
+                <p>1. Go to Settings → Safari → Camera</p>
+                <p>2. Select "Ask" or "Allow"</p>
+                <p>3. Return and refresh this page</p>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="mb-4">

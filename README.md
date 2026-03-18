@@ -28,6 +28,41 @@ product_tracker/
 └── README.md
 ```
 
+## Testing
+
+The project includes comprehensive unit tests for both API and frontend.
+
+```bash
+# Run API tests
+cd api
+npm test
+
+# Run frontend tests
+cd frontend
+npm test
+
+# Run with coverage
+npm run test:coverage
+```
+
+See [TESTING.md](./TESTING.md) for detailed testing documentation.
+
+## CI/CD Pipeline
+
+Automated testing and deployment via GitHub Actions:
+
+- ✅ **Automated Tests**: Run on every push and PR
+- ✅ **Auto Deploy**: Deploys to Cloudflare on merge to `main`
+- ✅ **Database Migration**: Applies schema changes automatically
+
+See [CI_CD.md](./CI_CD.md) for pipeline documentation.
+
+### Required GitHub Secrets
+
+Configure these in your repository settings:
+- `CLOUDFLARE_API_TOKEN` - API token with Workers/Pages permissions
+- `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID
+
 ## Getting Started
 
 ### Quick Start with Docker (Recommended)

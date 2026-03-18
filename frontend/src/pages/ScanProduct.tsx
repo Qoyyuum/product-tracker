@@ -7,9 +7,24 @@ export default function ScanProduct() {
   const [showScanner, setShowScanner] = useState(false);
   const navigate = useNavigate();
 
-  const handleScan = (qrHash: string) => {
+  const handleScan = (scannedData: string) => {
     setShowScanner(false);
-    navigate(`/product/${qrHash}`);
+    
+    // Extract hash from URL if it's a full URL
+    let hash = scannedData;
+    try {
+      // Check if it's a URL
+      if (scannedData.includes('://') || scannedData.includes('/product/')) {
+        const url = new URL(scannedData.startsWith('http') ? scannedData : `https://${scannedData}`);
+        const pathParts = url.pathname.split('/');
+        hash = pathParts[pathParts.length - 1] || scannedData;
+      }
+    } catch (e) {
+      // If URL parsing fails, use the original data
+      hash = scannedData;
+    }
+    
+    navigate(`/product/${hash}`);
   };
 
   return (
