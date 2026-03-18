@@ -1,0 +1,102 @@
+services:
+  api-test:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: product-tracker-api-test
+    environment:
+      - NODE_ENV=test
+      - JWT_SECRET=test-secret-key
+      - ADMIN_API_KEY=test-admin-key
+      - TURNSTILE_SECRET_KEY=test-turnstile-key
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+    command: npm test
+    networks:
+      - test-network
+
+  frontend-test:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: product-tracker-frontend-test
+    environment:
+      - NODE_ENV=test
+      - VITE_API_URL=http://api-test:8787
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm test
+    networks:
+      - test-network
+
+  integration-test:
+    build:
+      context: ./tests
+      dockerfile: Dockerfile
+    container_name: product-tracker-integration-test
+    environment:
+      - API_URL=http://api:8787
+      - FRONTEND_URL=http://frontend:3000
+    volumes:
+      - ./tests:/tests
+      - /tests/node_modules
+    depends_on:
+      - api
+      - frontend
+    networks:
+      - test-network
+    command: npm test
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: product-tracker-api-integration
+    ports:
+      - "8787:8787"
+    environment:
+      - NODE_ENV=test
+      - JWT_SECRET=test-secret-key
+      - ADMIN_API_KEY=test-admin-key
+      - TURNSTILE_SECRET_KEY=test-turnstile-key
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+    command: npx wrangler dev src/index.ts --port 8787
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8787/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: product-tracker-frontend-integration
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://api:8787
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  test-network:
+    driver: bridge
