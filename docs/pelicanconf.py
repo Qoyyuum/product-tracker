@@ -70,6 +70,10 @@ MENUITEMS = (
     ('Deployment', '/deployment.html'),
     ('Docker', '/docker.html'),
     ('CI/CD', '/ci-cd.html'),
+    ('Migration Summary', '/migration-summary.html'),
+    ('Test Results', '/test-results.html'),
+    ('Security Fixes', '/security-fixes.html'),
+    ('Code Quality', '/code-quality-fixes.html'),
 )
 
 # Display pages in menu
