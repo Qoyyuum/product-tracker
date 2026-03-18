@@ -1,0 +1,24 @@
+{
+  "name": "product-tracker-integration-tests",
+  "version": "1.0.0",
+  "description": "Integration tests for Product Tracker DApp",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:integration": "vitest run integration.test.js"
+  },
+  "keywords": [
+    "integration-tests",
+    "e2e"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "vitest": "^4.1.0"
+  }
+}

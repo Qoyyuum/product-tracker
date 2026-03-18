@@ -13,7 +13,7 @@ services:
     volumes:
       - ./api:/app
       - /app/node_modules
-    command: npx wrangler dev src/index.js --port 8787
+    command: npx wrangler dev src/index.ts --port 8787
     networks:
       - product-tracker-network
 
