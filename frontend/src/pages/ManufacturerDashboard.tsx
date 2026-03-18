@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Package, Plus, QrCode, ExternalLink } from 'lucide-react';
+import { Package, Plus, QrCode, ExternalLink, X } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787';
 
@@ -28,6 +28,7 @@ export default function ManufacturerDashboard() {
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [qrModalProduct, setQrModalProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -280,11 +281,15 @@ export default function ManufacturerDashboard() {
                       View Details
                     </a>
                     <button
-                      onClick={() => window.open(`/product/${product.qr_hash}`, '_blank')}
-                      className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 border border-gray-300"
+                      onClick={() => setQrModalProduct(product)}
+                      className="p-2 bg-white border-2 border-gray-200 rounded-md hover:border-primary-400 transition-colors"
+                      title="Click to view QR code"
                     >
-                      <QrCode size={16} />
-                      Generate QR
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${window.location.origin}/product/${product.qr_hash}`}
+                        alt="QR Code"
+                        className="w-16 h-16"
+                      />
                     </button>
                   </div>
                 </div>
@@ -293,6 +298,48 @@ export default function ManufacturerDashboard() {
           </div>
         )}
       </div>
+
+      {qrModalProduct && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setQrModalProduct(null)}>
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-gray-900">QR Code</h3>
+              <button
+                onClick={() => setQrModalProduct(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-4">{qrModalProduct.product_name}</p>
+              <div className="bg-white p-4 inline-block border-2 border-gray-200 rounded-lg">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${window.location.origin}/product/${qrModalProduct.qr_hash}`}
+                  alt="QR Code"
+                  className="w-64 h-64"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-4">Scan this QR code to view product details</p>
+              <div className="mt-4 flex gap-2">
+                <a
+                  href={`https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${window.location.origin}/product/${qrModalProduct.qr_hash}`}
+                  download={`qr-${qrModalProduct.product_name}.png`}
+                  className="flex-1 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 text-sm"
+                >
+                  Download QR Code
+                </a>
+                <button
+                  onClick={() => window.open(`/product/${qrModalProduct.qr_hash}`, '_blank')}
+                  className="flex-1 bg-gray-100 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-200 border border-gray-300 text-sm"
+                >
+                  View Page
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
