@@ -49,20 +49,23 @@ export default function Register() {
       }
     };
 
+    let checkTurnstile: NodeJS.Timeout | undefined;
+    
     if (window.turnstile) {
       renderTurnstile();
     } else {
-      const checkTurnstile = setInterval(() => {
+      checkTurnstile = setInterval(() => {
         if (window.turnstile) {
           renderTurnstile();
-          clearInterval(checkTurnstile);
+          clearInterval(checkTurnstile!);
         }
       }, 100);
-
-      return () => clearInterval(checkTurnstile);
     }
 
     return () => {
+      if (checkTurnstile) {
+        clearInterval(checkTurnstile);
+      }
       if (widgetIdRef.current && window.turnstile) {
         window.turnstile.remove(widgetIdRef.current);
         widgetIdRef.current = null;

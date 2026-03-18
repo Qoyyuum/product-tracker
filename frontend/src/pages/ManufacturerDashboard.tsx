@@ -101,6 +101,26 @@ export default function ManufacturerDashboard() {
     }
   };
 
+  const handleDownloadQR = async (product: Product) => {
+    try {
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${window.location.origin}/product/${product.qr_hash}`;
+      const response = await fetch(qrUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `qr-${product.product_name}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download QR code:', error);
+      setError('Failed to download QR code. Please try again.');
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -321,13 +341,12 @@ export default function ManufacturerDashboard() {
               </div>
               <p className="text-xs text-gray-500 mt-4">Scan this QR code to view product details</p>
               <div className="mt-4 flex gap-2">
-                <a
-                  href={`https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${window.location.origin}/product/${qrModalProduct.qr_hash}`}
-                  download={`qr-${qrModalProduct.product_name}.png`}
+                <button
+                  onClick={() => handleDownloadQR(qrModalProduct)}
                   className="flex-1 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 text-sm"
                 >
                   Download QR Code
-                </a>
+                </button>
                 <button
                   onClick={() => window.open(`/product/${qrModalProduct.qr_hash}`, '_blank')}
                   className="flex-1 bg-gray-100 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-200 border border-gray-300 text-sm"
