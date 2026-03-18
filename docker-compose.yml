@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   api:
     build:
@@ -15,7 +13,7 @@ services:
     volumes:
       - ./api:/app
       - /app/node_modules
-    command: npm run dev
+    command: npx wrangler dev src/index.js --port 8787
     networks:
       - product-tracker-network
 
@@ -25,7 +23,7 @@ services:
       dockerfile: Dockerfile
     container_name: product-tracker-frontend
     ports:
-      - "3000:3000"
+      - "3030:3000"
     environment:
       - VITE_API_URL=http://localhost:8787
     volumes:
