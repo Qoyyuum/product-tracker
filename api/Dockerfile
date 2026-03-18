@@ -3,7 +3,7 @@ FROM node:22-slim
 WORKDIR /app
 
 # Install curl for healthchecks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
 COPY package*.json ./

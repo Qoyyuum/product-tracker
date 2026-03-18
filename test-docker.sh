@@ -53,23 +53,23 @@ if [ $UP_STATUS -ne 0 ]; then
 fi
 
 # Wait for services to be ready with polling
-echo "Waiting for services to be ready..."
+echo -e "${YELLOW}Waiting for services to be ready...${NC}"
 TIMEOUT=60
 ELAPSED=0
 INTERVAL=2
 
 while [ $ELAPSED -lt $TIMEOUT ]; do
-    API_HEALTH=$(docker-compose -f docker-compose.test.yml ps api 2>/dev/null | grep -c "healthy")
-    FRONTEND_HEALTH=$(docker-compose -f docker-compose.test.yml ps frontend 2>/dev/null | grep -c "healthy")
+    API_HEALTH=$(docker inspect --format='{{.State.Health.Status}}' product-tracker-api-integration 2>/dev/null || echo "")
+    FRONTEND_HEALTH=$(docker inspect --format='{{.State.Health.Status}}' product-tracker-frontend-integration 2>/dev/null || echo "")
     
-    if [ $API_HEALTH -gt 0 ] && [ $FRONTEND_HEALTH -gt 0 ]; then
+    if [ "$API_HEALTH" = "healthy" ] && [ "$FRONTEND_HEALTH" = "healthy" ]; then
         echo -e "${GREEN}Services are healthy!${NC}"
         break
     fi
     
     sleep $INTERVAL
     ELAPSED=$((ELAPSED + INTERVAL))
-    echo "Waiting... ($ELAPSED/$TIMEOUT seconds)"
+    echo -e "${YELLOW}Waiting... ($ELAPSED/$TIMEOUT seconds)${NC}"
 done
 
 if [ $ELAPSED -ge $TIMEOUT ]; then
