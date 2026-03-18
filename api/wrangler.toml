@@ -1,0 +1,27 @@
+name = "product-tracker-api"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "product-tracker"
+database_id = "80dfb08a-f8a1-4f45-8e8f-e0d4445ea0b5"
+
+# R2 Storage
+[[r2_buckets]]
+binding = "product_tracker_storage"
+bucket_name = "product-tracker-storage"
+
+# KV Namespace
+[[kv_namespaces]]
+binding = "PRODUCTTRACKERCACHE"
+id = "835a39e20eec4d618561b0a3e1daee31"  # Replace after creating KV namespace
+
+# Environment variables
+[vars]
+ENVIRONMENT = "production"
+
+# Secrets (set with: wrangler secret put SECRET_NAME)
+# JWT_SECRET
+# ADMIN_API_KEY
